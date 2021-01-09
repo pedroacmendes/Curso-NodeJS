@@ -206,8 +206,8 @@ exports.postNewPassword = (req, res, next) => {
   })
     .then(user => {
       resetUser = user;
-      return bcrypt.hash(newPassword, 12);
-    })
+        return bcrypt.hash(newPassword, 12);
+      })
     .then(hashedPassword => {
       resetUser.password = hashedPassword;
       resetUser.resetToken = undefined;
@@ -218,6 +218,6 @@ exports.postNewPassword = (req, res, next) => {
       res.redirect('/login');
     })
     .catch(err => {
-      console.log(err);
+      console.log(err); 
     });
 };
