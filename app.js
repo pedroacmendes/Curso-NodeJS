@@ -15,8 +15,8 @@ const MONGODB_URI = 'mongodb+srv://pedro:pedro@cluster0.ydmoi.mongodb.net/shop';
 
 const app = express();
 const store = new MongoDBStore({
-  uri: MONGODB_URI,
-  collection: 'sessions'
+    uri: MONGODB_URI,
+    collection: 'sessions'
 });
 const csrfProtection = csrf();
 
@@ -30,32 +30,37 @@ const authRoutes = require('./routes/auth');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(
-  session({
-    secret: 'my secret',
-    resave: false,
-    saveUninitialized: false,
-    store: store
-  })
+    session({
+        secret: 'my secret',
+        resave: false,
+        saveUninitialized: false,
+        store: store
+    })
 );
 app.use(csrfProtection);
 app.use(flash());
 
 app.use((req, res, next) => {
-  if (!req.session.user) {
-    return next();
-  } 
-  User.findById(req.session.user._id)
+    if (!req.session.user) {
+        return next();
+    }
+    User.findById(req.session.user._id)
     .then(user => {
-      req.user = user;
-      next();
+        if(!user){
+            return next();
+        }
+        req.user = user;
+        next();
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+        throw new Error(err);
+    });
 });
 
 app.use((req, res, next) => {
-  res.locals.isAuthenticated = req.session.isLoggedIn;
-  res.locals.csrfToken = req.csrfToken();
-  next();
+    res.locals.isAuthenticated = req.session.isLoggedIn;
+    res.locals.csrfToken = req.csrfToken();
+    next();
 });
 
 app.use('/admin', adminRoutes);
@@ -65,10 +70,10 @@ app.use(authRoutes);
 app.use(errorController.get404);
 
 mongoose
-  .connect(MONGODB_URI)
-  .then(result => {
+.connect(MONGODB_URI)
+.then(result => {
     app.listen(3000);
-  })
-  .catch(err => {
+})
+.catch(err => {
     console.log(err);
-  });
+});
